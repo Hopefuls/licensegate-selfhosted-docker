@@ -41,9 +41,6 @@ services:
     restart: unless-stopped
 
 networks:
-  http:
-    name: http
-    external: true
   internal-licensegate:
     name: internal-licensegate
     external: false
