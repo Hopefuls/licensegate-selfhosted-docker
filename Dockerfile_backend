@@ -1,0 +1,20 @@
+FROM node:16
+
+# install git
+RUN apt-get update && apt-get install -y git
+
+RUN git clone https://github.com/DevLeoko/license-gate
+
+# set the backend as the workdir
+WORKDIR /license-gate/backend
+
+COPY .env .env
+
+RUN npm install
+
+# RUN npm run prisma-up, npm run prisma-gen, npm run start
+CMD echo "Waiting 60 seconds for mysql to be ready.." && \
+sleep 60 && \
+npm run prisma-up && \
+npm run prisma-gen && \
+npm run start

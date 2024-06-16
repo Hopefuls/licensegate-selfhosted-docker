@@ -1,0 +1,39 @@
+# Use ubuntu latest
+FROM ubuntu:latest
+
+# install nodejs 16.x
+RUN apt-get update && apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+RUN apt-get install -y nodejs
+
+# install git
+RUN apt-get install -y git
+
+# Install nginx
+RUN apt-get install -y nginx
+
+
+RUN git clone https://github.com/DevLeoko/license-gate
+WORKDIR /license-gate/frontend
+
+RUN mkdir -p /var/www/html/license-gate
+
+COPY .env .env
+
+RUN cat .env && sleep 5
+
+RUN npm install
+RUN npm run build
+
+RUN cp -r build/* /var/www/html/
+
+COPY nginx/licensegate-nginx-frontend.conf /etc/nginx/sites-available/licensegate-nginx-frontend.conf
+COPY nginx/licensegate-nginx-backend.conf /etc/nginx/sites-available/licensegate-nginx-backend.conf
+
+RUN ln -s /etc/nginx/sites-available/licensegate-nginx-frontend.conf /etc/nginx/sites-enabled/licensegate-nginx-frontend.conf
+RUN ln -s /etc/nginx/sites-available/licensegate-nginx-backend.conf /etc/nginx/sites-enabled/licensegate-nginx-backend.conf
+
+# restart nginx and then tail the logs to keep the container running
+CMD echo "Sleeping 45 seconds to wait for backend setup" && sleep 45 && service nginx restart && tail -f /var/log/nginx/error.log /var/log/nginx/access.log
+
+

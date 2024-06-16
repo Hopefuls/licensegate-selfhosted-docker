@@ -1,0 +1,50 @@
+version: '3'
+services:
+  licensegate-frontend-nginx:
+    hostname: licensegate-frontend-nginx
+    build:
+      context: .
+      dockerfile: Dockerfile_frontend
+    networks:
+      internal-licensegate:
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    volumes:
+      # add the error.log and access.log to the volume
+      - ./nginx/logs:/var/log/nginx
+
+  licensegate-backend-api:
+    hostname: licensegate-backend-api
+    build:
+      context: .
+      dockerfile: Dockerfile_backend
+    depends_on:
+      - licensegate-mysql-database
+      - licensegate-frontend-nginx
+    restart: unless-stopped
+    networks:
+      internal-licensegate:
+
+  licensegate-mysql-database:
+    image: mysql:latest
+    hostname: licensegate-mysql-database
+    environment:
+      MYSQL_ROOT_PASSWORD: D3fin3M3
+      MYSQL_DATABASE: db
+      MYSQL_USER: licensegate
+      MYSQL_PASSWORD: licensegate
+    networks:
+      internal-licensegate:
+    volumes:
+      - ./mysql:/var/lib/mysql
+    restart: unless-stopped
+
+networks:
+  http:
+    name: http
+    external: true
+  internal-licensegate:
+    name: internal-licensegate
+    external: false
+
